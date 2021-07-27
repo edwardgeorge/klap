@@ -173,6 +173,15 @@ impl Label {
     }
 }
 
+impl std::convert::From<(Key, LabelValue)> for Label {
+    fn from(input: (Key, LabelValue)) -> Self {
+        Label {
+            key: input.0,
+            value: input.1,
+        }
+    }
+}
+
 pub type Labels = Vec<Label>;
 pub type LabelMap = HashMap<Key, LabelValue>;
 pub type AnnotationMap = HashMap<Key, String>;
