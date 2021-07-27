@@ -168,6 +168,9 @@ impl Label {
     pub fn new(key: Key, value: LabelValue) -> Self {
         Label { key, value }
     }
+    pub fn into_tuple(self) -> (Key, LabelValue) {
+        (self.key, self.value)
+    }
 }
 
 pub type Labels = Vec<Label>;
