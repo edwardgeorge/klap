@@ -6,11 +6,11 @@ pub use types::*;
 #[cfg(feature = "serde_support")]
 #[cfg(test)]
 mod serde_tests {
-    use super::{Key, KeyName, KeyPrefix, LabelMap, LabelValue};
+    use super::{AnnotationMap, Key, KeyName, KeyPrefix, LabelMap, LabelValue};
     use serde_yaml::{from_str, to_string};
 
     #[test]
-    fn deser_hash() {
+    fn deser_label_hash() {
         let input = concat!(
             "foo: bar\n",
             "edwardgeorge.github.io/test-label: foo-bar\n",
@@ -32,6 +32,43 @@ mod serde_tests {
             (
                 Key::new_no_prefix(KeyName("empty-label".to_string())),
                 LabelValue("".to_string()),
+            ),
+        ]
+        .drain(..)
+        .collect();
+        assert_eq!(parsed, expected);
+        // test the ser/de roundtrip
+        assert_eq!(parsed, from_str(&to_string(&parsed).unwrap()).unwrap());
+    }
+
+    #[test]
+    fn deser_annotation_hash() {
+        let input = concat!(
+            "foo: bar\n",
+            "edwardgeorge.github.io/test-label: foo-bar\n",
+            "empty-label: \"\"\n",
+            "hello: |\n  *fjndb_..2\n  qwe34.,/sd-+_sd\n  ,world!\n"
+        );
+        let parsed: AnnotationMap = from_str(input).unwrap();
+        let expected: AnnotationMap = vec![
+            (
+                Key::new_no_prefix(KeyName("foo".to_string())),
+                "bar".to_string(),
+            ),
+            (
+                Key::new_with_prefix(
+                    KeyPrefix("edwardgeorge.github.io".to_string()),
+                    KeyName("test-label".to_string()),
+                ),
+                "foo-bar".to_string(),
+            ),
+            (
+                Key::new_no_prefix(KeyName("empty-label".to_string())),
+                "".to_string(),
+            ),
+            (
+                Key::new_no_prefix(KeyName("hello".to_string())),
+                "*fjndb_..2\nqwe34.,/sd-+_sd\n,world!\n".to_string(),
             ),
         ]
         .drain(..)
@@ -162,5 +199,14 @@ mod tests {
     #[case("foo:bar,bar:baz baz:qux")] // mixed separators
     fn test_invalid_labels_from_either(#[case] input: &str) {
         assert!(labels_from_str_either(input).is_err())
+    }
+
+    #[rstest]
+    #[case("foo:bar", "foo", "bar")]
+    #[case("foo:-sfn3.sffs\ndfe-=_sfdgd...", "foo", "-sfn3.sffs\ndfe-=_sfdgd...")]
+    fn test_parse_annotation(#[case] input: &str, #[case] key: &str, #[case] value: &str) {
+        let annotation = annotation_from_str(input).unwrap();
+        assert_eq!(&annotation.key.to_string(), key);
+        assert_eq!(&annotation.value, value);
     }
 }

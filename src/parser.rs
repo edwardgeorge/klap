@@ -167,3 +167,24 @@ pub fn labels_from_str_either(input: &str) -> Result<Vec<Label>, Error> {
     }
     Ok(res)
 }
+
+pub fn annotation_from_str(input: &str) -> Result<Annotation, Error> {
+    let mut pairs = LabelParser::parse(Rule::annotation_whole, input)?;
+    let first = pairs.next().unwrap();
+    let key = match first.as_rule() {
+        Rule::label_key => match_key(first),
+        _ => unreachable!(),
+    };
+    let second = pairs.next().unwrap();
+    let value = match second.as_rule() {
+        Rule::annotation_value => second.as_str().to_string(),
+        Rule::EOI => {
+            return Ok(Annotation::new(key, "".to_string()));
+        }
+        _ => unreachable!(),
+    };
+    match pairs.next().unwrap().as_rule() {
+        Rule::EOI => Ok(Annotation::new(key, value)),
+        _ => unreachable!(),
+    }
+}

@@ -43,3 +43,6 @@ labels_colon_either = _{ SOI ~ label_colon_spec ~
   ( &"," ~ ("," ~ label_colon_spec)+
    | &whitespace ~ (whitespace+ ~ label_colon_spec)+
    | &EOI )? ~ EOI }
+
+annotation_value = @{ ANY+ }
+annotation_whole = _{ SOI ~ label_key ~ (":" | "=") ~ annotation_value? ~ EOI }
