@@ -101,7 +101,7 @@ mod tests {
     #[case("foo/bar:baz", "foo/bar", "baz")]
     #[case("foo:", "foo", "")]
     fn test_parse_wcolon(#[case] input: &str, #[case] key: &str, #[case] value: &str) {
-        let label = label_from_csvstr_wcolon(input).unwrap();
+        let label = label_from_str_wcolon(input).unwrap();
         assert_eq!(&label.key.to_string(), key);
         assert_eq!(label.value.as_str(), value);
     }
@@ -121,5 +121,37 @@ mod tests {
     #[case("foo:bar,bar,baz:qux")]
     fn test_invalid_csv(#[case] input: &str) {
         assert!(labels_from_csvstr_wcolon(input).is_err());
+    }
+
+    #[rstest]
+    #[case("foo:bar", 1)]
+    #[case("foo:bar bar:baz", 2)]
+    #[case("foo:bar\nbar:baz", 2)]
+    #[case("foo:bar\n\n\n\nbar:baz", 2)]
+    #[case("foo:bar     bar:baz", 2)]
+    #[case("foo:bar \n    bar:baz", 2)]
+    #[case("foo:bar bar:baz\nbaz: qux:qux", 4)]
+    fn test_labels_from_wsv(#[case] input: &str, #[case] num_items: usize) {
+        let labels = labels_from_wsvstr_wcolon(input).unwrap();
+        assert_eq!(labels.len(), num_items);
+    }
+
+    #[rstest]
+    #[case("foo:bar", 1)]
+    #[case("foo:bar bar:baz", 2)]
+    #[case("foo:bar,bar:baz", 2)]
+    #[case("foo:bar bar:baz \nbaz:qux", 3)]
+    #[case("foo:bar,bar:baz,baz:qux", 3)]
+    fn test_labels_from_either(#[case] input: &str, #[case] num_items: usize) {
+        let labels = labels_from_str_either(input).unwrap();
+        assert_eq!(labels.len(), num_items);
+    }
+
+    #[rstest]
+    #[case("")]
+    #[case("foo:bar bar:baz,baz:qux")]  // mixed separators
+    #[case("foo:bar,bar:baz baz:qux")]  // mixed separators
+    fn test_invalid_labels_from_either(#[case] input: &str) {
+        assert!(labels_from_str_either(input).is_err())
     }
 }

@@ -119,7 +119,7 @@ pub fn labels_from_envstr(input: &str) -> Result<Vec<Label>, Error> {
     Ok(res)
 }
 
-pub fn label_from_csvstr_wcolon(input: &str) -> Result<Label, Error> {
+pub fn label_from_str_wcolon(input: &str) -> Result<Label, Error> {
     let mut pairs = LabelParser::parse(Rule::label_colon_whole, input)?;
     let first = pairs.next().unwrap();
     let label = match first.as_rule() {
@@ -135,6 +135,30 @@ pub fn label_from_csvstr_wcolon(input: &str) -> Result<Label, Error> {
 pub fn labels_from_csvstr_wcolon(input: &str) -> Result<Vec<Label>, Error> {
     let mut res = Vec::new();
     for pair in LabelParser::parse(Rule::labels_colon_csv, input)? {
+        match pair.as_rule() {
+            Rule::label_colon_spec => res.push(match_label(pair)),
+            Rule::EOI => (),
+            _ => unreachable!(),
+        }
+    }
+    Ok(res)
+}
+
+pub fn labels_from_wsvstr_wcolon(input: &str) -> Result<Vec<Label>, Error> {
+    let mut res = Vec::new();
+    for pair in LabelParser::parse(Rule::labels_colon_wsv, input)? {
+        match pair.as_rule() {
+            Rule::label_colon_spec => res.push(match_label(pair)),
+            Rule::EOI => (),
+            _ => unreachable!(),
+        }
+    }
+    Ok(res)
+}
+
+pub fn labels_from_str_either(input: &str) -> Result<Vec<Label>, Error> {
+    let mut res = Vec::new();
+    for pair in LabelParser::parse(Rule::labels_colon_either, input)? {
         match pair.as_rule() {
             Rule::label_colon_spec => res.push(match_label(pair)),
             Rule::EOI => (),

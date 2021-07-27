@@ -38,3 +38,8 @@ label_colon_whole = _{ SOI ~ label_colon_spec ~ EOI }
 
 labels_colon_csv = _{ SOI ~ label_colon_spec ~ ("," ~ label_colon_spec)* ~ EOI }
 labels_colon_wsv = _{ SOI ~ label_colon_spec ~ (whitespace+ ~ label_colon_spec)* ~ EOI }
+
+labels_colon_either = _{ SOI ~ label_colon_spec ~
+  ( &"," ~ ("," ~ label_colon_spec)+
+   | &whitespace ~ (whitespace+ ~ label_colon_spec)+
+   | &EOI )? ~ EOI }
