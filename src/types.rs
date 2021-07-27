@@ -182,8 +182,35 @@ impl std::convert::From<(Key, LabelValue)> for Label {
     }
 }
 
+/// A Label is a key/value following the k8s validation rules
+#[derive(PartialEq, Eq, Debug, Clone, Hash, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde_support", derive(Serialize))]
+pub struct Annotation {
+    pub key: Key,
+    pub value: String,
+}
+
+impl Annotation {
+    pub fn new(key: Key, value: String) -> Self {
+        Annotation { key, value }
+    }
+    pub fn into_tuple(self) -> (Key, String) {
+        (self.key, self.value)
+    }
+}
+
+impl std::convert::From<(Key, String)> for Annotation {
+    fn from(input: (Key, String)) -> Self {
+        Annotation {
+            key: input.0,
+            value: input.1,
+        }
+    }
+}
+
 pub type Labels = Vec<Label>;
 pub type LabelMap = HashMap<Key, LabelValue>;
+pub type Annotations = Vec<Annotation>;
 pub type AnnotationMap = HashMap<Key, String>;
 
 #[cfg(feature = "serde_support")]
