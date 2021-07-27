@@ -11,7 +11,11 @@ mod serde_tests {
 
     #[test]
     fn deser_hash() {
-        let input = concat!("foo: bar\n", "edwardgeorge.github.io/test-label: foo-bar\n", "empty-label: \"\"\n");
+        let input = concat!(
+            "foo: bar\n",
+            "edwardgeorge.github.io/test-label: foo-bar\n",
+            "empty-label: \"\"\n"
+        );
         let parsed: LabelMap = from_str(input).unwrap();
         let expected: LabelMap = vec![
             (
@@ -28,7 +32,7 @@ mod serde_tests {
             (
                 Key::new_no_prefix(KeyName("empty-label".to_string())),
                 LabelValue("".to_string()),
-            )
+            ),
         ]
         .drain(..)
         .collect();
@@ -40,14 +44,18 @@ mod serde_tests {
 
 #[cfg(test)]
 mod tests {
-    use rstest::*;
     use super::*;
-    
+    use rstest::*;
+
     #[rstest]
     #[case("foo", None, "foo")]
     #[case("foo/bar", Some("foo"), "bar")]
     #[case("foo.bar-baz/qux", Some("foo.bar-baz"), "qux")]
-    #[case("edwardgeorge.github.io/example-label", Some("edwardgeorge.github.io"), "example-label")]
+    #[case(
+        "edwardgeorge.github.io/example-label",
+        Some("edwardgeorge.github.io"),
+        "example-label"
+    )]
     //#[case(&format!("{}{}/foo", "1234567890".repeat(6), "123"), None, "")] // over 255 chars
     fn test_can_parse_key(#[case] input: &str, #[case] prefix: Option<&str>, #[case] name: &str) {
         let key = label_key_from_str(input).unwrap();
@@ -62,7 +70,8 @@ mod tests {
     #[test]
     fn test_long_subdomains() {
         let max_part: String = format!("{}{}", "1234567890".repeat(6), "123"); // 63 chars
-        let long_subdomain: String = vec![&max_part[..], &max_part[..], &max_part[..], &max_part[..]].join("."); // just under 255 in total
+        let long_subdomain: String =
+            vec![&max_part[..], &max_part[..], &max_part[..], &max_part[..]].join("."); // just under 255 in total
         let prefix = label_keyprefix_from_str(&long_subdomain).unwrap();
         assert_eq!(prefix.as_str(), &long_subdomain);
         let prefix2 = KeyPrefix::parse_str(&long_subdomain).unwrap();
@@ -149,8 +158,8 @@ mod tests {
 
     #[rstest]
     #[case("")]
-    #[case("foo:bar bar:baz,baz:qux")]  // mixed separators
-    #[case("foo:bar,bar:baz baz:qux")]  // mixed separators
+    #[case("foo:bar bar:baz,baz:qux")] // mixed separators
+    #[case("foo:bar,bar:baz baz:qux")] // mixed separators
     fn test_invalid_labels_from_either(#[case] input: &str) {
         assert!(labels_from_str_either(input).is_err())
     }
