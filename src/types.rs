@@ -61,6 +61,13 @@ macro_rules! parse_from {
                 $ty::parse_str(value)
             }
         }
+
+        impl std::str::FromStr for $ty {
+            type Err = Error;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                $ty::parse_str(s)
+            }
+        }
     };
 }
 
